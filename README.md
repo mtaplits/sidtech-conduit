@@ -24,17 +24,24 @@ Conduit is a Firebase/Parse alternative that provides ready-made modules for com
 ### Option 1: Using Docker Compose directly
 
 ```bash
-# Start all services
-docker compose up -d
+# Create a local env file (NOT committed)
+cp env.dev.example env
+
+# Start services (dev)
+docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml up -d
 
 # Check status
-docker compose ps
+docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml ps
 
 # View logs
-docker compose logs -f
+docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml logs -f
 
 # Stop services
-docker compose down
+docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml down
 ```
 
 ### Option 2: Using Conduit CLI
@@ -67,12 +74,19 @@ After installation, log out and back in (or run `newgrp docker`).
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| Admin Panel | http://localhost:8080 | Web-based admin interface |
-| REST API | http://localhost:3000 | REST API endpoint |
-| GraphQL API | http://localhost:3001 | GraphQL API endpoint |
-| Prometheus | http://localhost:9090 | Metrics dashboard |
-| MongoDB | localhost:27017 | Database |
-| Redis | localhost:6379 | Cache |
+| Admin Panel | http://127.0.0.1:8080 | Web-based admin interface |
+| REST API | http://127.0.0.1:3000 | REST API endpoint |
+| GraphQL API | http://127.0.0.1:3001 | GraphQL API endpoint |
+
+Dev-only (when using [`sidtech-conduit/compose.dev.yml`](sidtech-conduit/compose.dev.yml:1)):
+- Prometheus: `http://127.0.0.1:9090`
+- Loki: `http://127.0.0.1:3100`
+- MongoDB: `127.0.0.1:27017`
+- Redis: `127.0.0.1:6379`
+
+> Dev VPS note: ports are bound to `127.0.0.1` for safety. Access them via SSH port-forwarding (example):
+>
+> `ssh -L 8080:127.0.0.1:8080 -L 3000:127.0.0.1:3000 -L 3001:127.0.0.1:3001 user@your-vps`
 
 ## Default Credentials
 
@@ -87,9 +101,17 @@ After installation, log out and back in (or run `newgrp docker`).
 sidtech-conduit/
 ├── README.md              # This file
 ├── compose.yml            # Docker Compose configuration
-├── env                    # Environment variables
+├── compose.dev.yml        # Dev overrides (extra localhost-only ports)
+├── compose.staging.yml    # Staging overrides
+├── compose.prod.yml       # Production overrides
+├── env                    # Local runtime env (gitignored; contains secrets)
 ├── loki.cfg.yml           # Loki logging configuration
 ├── prometheus.cfg.yml     # Prometheus metrics configuration
+├── env.example            # Base env template (no secrets)
+├── env.dev.example        # Dev env template (no secrets)
+├── env.staging.example    # Staging env template (no secrets)
+├── env.prod.example       # Prod env template (no secrets)
+├── DEPLOYMENT.md          # Multi-dev + staging/prod workflow
 ├── install-docker.sh      # Docker installation script (Ubuntu)
 └── setup-conduit.sh       # Conduit setup script
 ```
@@ -113,12 +135,11 @@ sidtech-conduit/
 
 ### Environment Variables
 
-Edit the `env` file to customize your deployment:
+Create `env` from a template and customize it (the file is gitignored):
 
 ```bash
-# Example environment variables
-CONDUIT_SERVER_URL=http://localhost:3030
-MASTER_KEY=your-secret-key
+cp env.dev.example env
+# then edit `env` and set real values for CORE_MASTER_KEY / GRPC_KEY
 ```
 
 ### Docker Compose
@@ -129,20 +150,20 @@ The `compose.yml` file contains the full service configuration. Modify as needed
 
 ```bash
 # View running containers
-docker compose ps
+docker compose --env-file env --profile mongodb -f compose.yml ps
 
 # View logs for a specific service
-docker compose logs -f conduit
+docker compose --env-file env --profile mongodb -f compose.yml logs -f conduit
 
 # Restart a specific service
-docker compose restart conduit
+docker compose --env-file env --profile mongodb -f compose.yml restart conduit
 
 # Remove all containers and volumes (WARNING: deletes data)
-docker compose down -v
+docker compose --env-file env --profile mongodb -f compose.yml down -v
 
-# Update to latest images
-docker compose pull
-docker compose up -d
+# Upgrade images (recommended: pin tags via PR, see DEPLOYMENT.md)
+docker compose --env-file env --profile mongodb -f compose.yml pull
+docker compose --env-file env --profile mongodb -f compose.yml up -d
 ```
 
 ## Backup & Restore

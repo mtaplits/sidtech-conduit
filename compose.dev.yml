@@ -1,0 +1,51 @@
+# Dev-only overrides.
+#
+# Usage (example):
+#   docker compose --env-file env --profile mongodb \
+#     -f compose.yml -f compose.dev.yml up -d
+#
+# This file re-exposes internal ports *to localhost only* for debugging.
+
+services:
+  core:
+    ports:
+      - '127.0.0.1:${CORE_GRPC_PORT:-55152}:${CORE_GRPC_PORT:-55152}'
+
+  database:
+    ports:
+      - '127.0.0.1:${DB_GRPC_PORT:-55160}:${DB_GRPC_PORT:-55160}'
+
+  router:
+    ports:
+      - '127.0.0.1:${ROUTER_GRPC_PORT:-55161}:${ROUTER_GRPC_PORT:-55161}'
+
+  authentication:
+    ports:
+      - '127.0.0.1:${AUTHN_GRPC_PORT:-55162}:${AUTHN_GRPC_PORT:-55162}'
+
+  authorization:
+    ports:
+      - '127.0.0.1:${AUTHZ_GRPC_PORT:-55169}:${AUTHZ_GRPC_PORT:-55169}'
+
+  # Dependencies
+  redis:
+    ports:
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+
+  mongodb:
+    ports:
+      - '127.0.0.1:${DB_PORT:-27017}:27017'
+
+  postgres:
+    ports:
+      - '127.0.0.1:${DB_PORT:-5432}:5432'
+
+  # Metrics / Logs
+  prometheus:
+    ports:
+      - '127.0.0.1:${PROMETHEUS_PORT:-9090}:9090'
+
+  loki:
+    ports:
+      - '127.0.0.1:${LOKI_PORT:-3100}:3100'
+

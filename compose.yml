@@ -37,9 +37,8 @@ services:
       - prometheus
       - loki
     ports:
-      - '${CORE_GRPC_PORT:-55152}:${CORE_GRPC_PORT:-55152}'
-      - '${ADMIN_HTTP_PORT:-3030}:3030'
-      - '${ADMIN_SOCKET_PORT:-3031}:3031'
+      - '127.0.0.1:${ADMIN_HTTP_PORT:-3030}:3030'
+      - '127.0.0.1:${ADMIN_SOCKET_PORT:-3031}:3031'
     environment:
       REDIS_HOST: 'conduit-redis'
       REDIS_PORT: '${REDIS_PORT:-6379}'
@@ -65,7 +64,7 @@ services:
       - prometheus
       - loki
     ports:
-      - '${UI_PORT:-8080}:8080'
+      - '127.0.0.1:${UI_PORT:-8080}:8080'
     environment:
       CONDUIT_URL: 'http://conduit:3030'
       MASTER_KEY: '${CORE_MASTER_KEY:-M4ST3RK3Y}'
@@ -81,8 +80,6 @@ services:
       - ${DB_TYPE:-mongodb}
       - prometheus
       - loki
-    ports:
-      - '${DB_GRPC_PORT:-55160}:${DB_GRPC_PORT:-55160}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-database:${DB_GRPC_PORT:-55160}'
@@ -109,9 +106,8 @@ services:
       - prometheus
       - loki
     ports:
-      - '${ROUTER_GRPC_PORT:-55161}:${ROUTER_GRPC_PORT:-55161}'
-      - '${CLIENT_HTTP_PORT:-3000}:3000'
-      - '${CLIENT_SOCKET_PORT:-3001}:3001'
+      - '127.0.0.1:${CLIENT_HTTP_PORT:-3000}:3000'
+      - '127.0.0.1:${CLIENT_SOCKET_PORT:-3001}:3001'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-router:${ROUTER_GRPC_PORT:-55161}'
@@ -138,8 +134,6 @@ services:
       - database
       - prometheus
       - loki
-    ports:
-      - '${AUTHN_GRPC_PORT:-55162}:${AUTHN_GRPC_PORT:-55162}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-authentication:${AUTHN_GRPC_PORT:-55162}'
@@ -163,8 +157,6 @@ services:
       - database
       - prometheus
       - loki
-    ports:
-      - '${AUTHZ_GRPC_PORT:-55162}:${AUTHZ_GRPC_PORT:-55169}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-authorization:${AUTHZ_GRPC_PORT:-55169}'
@@ -191,8 +183,6 @@ services:
       - router
       - prometheus
       - loki
-    ports:
-      - '${CHAT_GRPC_PORT:-55163}:${CHAT_GRPC_PORT:-55163}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-chat:${CHAT_GRPC_PORT:-55163}'
@@ -217,8 +207,6 @@ services:
       - database
       - prometheus
       - loki
-    ports:
-      - '${EMAIL_GRPC_PORT:-55164}:${EMAIL_GRPC_PORT:-55164}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-email:${EMAIL_GRPC_PORT:-55164}'
@@ -245,8 +233,6 @@ services:
       - email
       - prometheus
       - loki
-    ports:
-      - '${FORMS_GRPC_PORT:-55165}:${FORMS_GRPC_PORT:-55165}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-forms:${FORMS_GRPC_PORT:-55165}'
@@ -272,8 +258,6 @@ services:
       - router
       - prometheus
       - loki
-    ports:
-      - '${PUSH_GRPC_PORT:-55166}:${PUSH_GRPC_PORT:-55166}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-push-notifications:${PUSH_GRPC_PORT:-55166}'
@@ -298,8 +282,6 @@ services:
       - database
       - prometheus
       - loki
-    ports:
-      - '${SMS_GRPC_PORT:-55167}:${SMS_GRPC_PORT:-55167}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-sms:${SMS_GRPC_PORT:-55167}'
@@ -325,8 +307,6 @@ services:
       - router
       - prometheus
       - loki
-    ports:
-      - '${STORAGE_GRPC_PORT:-55168}:${STORAGE_GRPC_PORT:-55168}'
     environment:
       CONDUIT_SERVER: 'conduit:${CORE_GRPC_PORT:-55152}'
       SERVICE_URL: 'conduit-storage:${STORAGE_GRPC_PORT:-55168}'
@@ -347,15 +327,11 @@ services:
     container_name: 'conduit-redis'
     image: 'docker.io/library/redis:7.0.2'
     restart: unless-stopped
-    ports:
-      - '${REDIS_PORT:-6379}:6379'
 
   mongodb:
     container_name: 'conduit-mongo'
     image: 'docker.io/library/mongo:4.4.15'
     restart: unless-stopped
-    ports:
-      - '${DB_PORT:-27017}:27017'
     environment:
       MONGO_INITDB_DATABASE: 'conduit'
       MONGO_INITDB_ROOT_USERNAME: '${DB_USER:-conduit}'
@@ -372,8 +348,6 @@ services:
     container_name: 'conduit-postgres'
     image: 'docker.io/library/postgres:14.4'
     restart: unless-stopped
-    ports:
-      - '${DB_PORT:-5432}:5432'
     environment:
       POSTGRES_DB: 'conduit'
       POSTGRES_USER: '${DB_USER:-conduit}'
@@ -393,8 +367,6 @@ services:
     restart: unless-stopped
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - '${PROMETHEUS_PORT:-9090}:9090'
     networks:
       default:
         aliases:
@@ -407,8 +379,6 @@ services:
     image: 'docker.io/grafana/loki:2.6.1'
     container_name: 'conduit-loki'
     restart: unless-stopped
-    ports:
-      - '${LOKI_PORT:-3100}:3100'
     networks:
       default:
         aliases:

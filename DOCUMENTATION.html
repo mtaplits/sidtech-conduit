@@ -130,7 +130,15 @@
     <h3>Project Files (Your Code)</h3>
     <pre>/home/mtaplits/Documents/sidtech-conduit/
 ├── compose.yml              # Docker Compose configuration
-├── env                      # Environment variables
+├── compose.dev.yml          # Dev overrides (extra localhost-only ports)
+├── compose.staging.yml      # Staging overrides
+├── compose.prod.yml         # Production overrides
+├── env                      # Local runtime env (gitignored; contains secrets)
+├── env.example              # Base env template (no secrets)
+├── env.dev.example          # Dev env template (no secrets)
+├── env.staging.example      # Staging env template (no secrets)
+├── env.prod.example         # Prod env template (no secrets)
+├── DEPLOYMENT.md            # Multi-dev + staging/prod workflow
 ├── loki.cfg.yml            # Logging configuration
 ├── prometheus.cfg.yml      # Metrics configuration
 ├── README.md               # Documentation
@@ -187,25 +195,25 @@
             <td>MongoDB</td>
             <td>27017</td>
             <td><code>localhost:27017</code></td>
-            <td>Database</td>
+            <td>Database (dev-only when using <code>compose.dev.yml</code>)</td>
         </tr>
         <tr>
             <td>Redis</td>
             <td>6379</td>
             <td><code>localhost:6379</code></td>
-            <td>Cache & sessions</td>
+            <td>Cache & sessions (dev-only when using <code>compose.dev.yml</code>)</td>
         </tr>
         <tr>
             <td>Prometheus</td>
             <td>9090</td>
             <td><code>http://localhost:9090</code></td>
-            <td>Metrics dashboard</td>
+            <td>Metrics dashboard (dev-only when using <code>compose.dev.yml</code>)</td>
         </tr>
         <tr>
             <td>Loki</td>
             <td>3100</td>
             <td><code>http://localhost:3100</code></td>
-            <td>Log aggregation</td>
+            <td>Log aggregation (dev-only when using <code>compose.dev.yml</code>)</td>
         </tr>
     </table>
 
@@ -388,23 +396,31 @@
     <h2>🛠️ Quick Commands</h2>
     <h3>Start Conduit</h3>
     <pre>cd /home/mtaplits/Documents/sidtech-conduit
-docker compose up -d</pre>
+cp env.dev.example env
+docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml up -d</pre>
 
     <h3>Stop Conduit</h3>
-    <pre>docker compose down</pre>
+    <pre>docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml down</pre>
 
     <h3>View Logs</h3>
-    <pre>docker compose logs -f</pre>
+    <pre>docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml logs -f</pre>
 
     <h3>Check Status</h3>
-    <pre>docker compose ps</pre>
+    <pre>docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml ps</pre>
 
     <h3>Restart a Service</h3>
-    <pre>docker compose restart conduit</pre>
+    <pre>docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml restart conduit</pre>
 
     <h3>Update Images</h3>
-    <pre>docker compose pull
-docker compose up -d</pre>
+    <pre>docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml pull
+docker compose --env-file env --profile mongodb \
+  -f compose.yml -f compose.dev.yml up -d</pre>
 
     <h2>💾 Backup & Restore</h2>
     <h3>Backup MongoDB</h3>

@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  compose-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate compose (base + dev)
+        run: |
+          docker compose --profile mongodb --env-file env.example \
+            -f compose.yml -f compose.dev.yml config >/dev/null
+
+      - name: Validate compose (base + staging)
+        run: |
+          docker compose --profile mongodb --env-file env.staging.example \
+            -f compose.yml -f compose.staging.yml config >/dev/null
+
+      - name: Validate compose (base + prod)
+        run: |
+          docker compose --profile mongodb --env-file env.prod.example \
+            -f compose.yml -f compose.prod.yml config >/dev/null
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+

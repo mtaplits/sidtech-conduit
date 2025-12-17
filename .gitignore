@@ -3,6 +3,13 @@
 .env.local
 .env.*.local
 
+# Conduit CLI uses a file literally named `env` (this repo)
+env
+env.*
+
+# ...but we *do* want to commit templates
+!env*.example
+
 # Node modules (if using npm locally)
 node_modules/
 
